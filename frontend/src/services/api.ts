@@ -38,6 +38,12 @@ export const api = {
     preference: PreferenceProfile;
     max_walking_meters?: number;
     avoid_modes?: TransportMode[];
+    origin_lat?: number;
+    origin_lng?: number;
+    dest_lat?: number;
+    dest_lng?: number;
+    is_custom_origin?: boolean;
+    is_custom_dest?: boolean;
   }): Promise<RouteSearchResponse> {
     const res = await fetch(`${API_BASE}/api/routes/search`, {
       method: 'POST',

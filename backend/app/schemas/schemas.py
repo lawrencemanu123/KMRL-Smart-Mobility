@@ -64,6 +64,12 @@ class RouteSearchRequest(BaseModel):
     preference: str = "fastest"  # fastest, cheapest, min_transfers, comfortable, eco
     max_walking_meters: int = 1500
     avoid_modes: Optional[List[str]] = Field(default_factory=list)
+    origin_lat: Optional[float] = None
+    origin_lng: Optional[float] = None
+    dest_lat: Optional[float] = None
+    dest_lng: Optional[float] = None
+    is_custom_origin: bool = False
+    is_custom_dest: bool = False
 
 
 class LegOut(BaseModel):

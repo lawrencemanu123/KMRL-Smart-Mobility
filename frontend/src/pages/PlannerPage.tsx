@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Station, 
-  JourneyPlan, 
-  PreferenceProfile, 
+import {
+  Station,
+  JourneyPlan,
+  PreferenceProfile,
   TransportMode,
-  DynamicRerouteResponse 
+  DynamicRerouteResponse
 } from '../types';
 import { api } from '../services/api';
 import { JourneyPlanner } from '../components/planner/JourneyPlanner';
@@ -31,6 +31,9 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({ stations, onSaveJourne
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [customOrigin, setCustomOrigin] = useState<{ lat: number; lng: number; name: string } | null>(null);
+  const [customDest, setCustomDest] = useState<{ lat: number; lng: number; name: string } | null>(null);
+
   // Dynamic reroute state
   const [rerouteData, setRerouteData] = useState<DynamicRerouteResponse | null>(null);
 
@@ -49,7 +52,13 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({ stations, onSaveJourne
         destination_id: destinationId,
         preference,
         max_walking_meters: maxWalking,
-        avoid_modes: avoidModes
+        avoid_modes: avoidModes,
+        origin_lat: customOrigin?.lat,
+        origin_lng: customOrigin?.lng,
+        dest_lat: customDest?.lat,
+        dest_lng: customDest?.lng,
+        is_custom_origin: !!customOrigin,
+        is_custom_dest: !!customDest
       });
       setRoutes(data.routes);
       if (data.routes.length > 0) {
@@ -86,7 +95,13 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({ stations, onSaveJourne
         destination_id: destinationId,
         preference,
         max_walking_meters: maxWalking,
-        avoid_modes: avoidModes
+        avoid_modes: avoidModes,
+        origin_lat: customOrigin?.lat,
+        origin_lng: customOrigin?.lng,
+        dest_lat: customDest?.lat,
+        dest_lng: customDest?.lng,
+        is_custom_origin: !!customOrigin,
+        is_custom_dest: !!customDest
       });
       setRoutes(updated.routes);
     } catch (err) {
@@ -111,7 +126,13 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({ stations, onSaveJourne
         destination_id: destinationId,
         preference,
         max_walking_meters: maxWalking,
-        avoid_modes: avoidModes
+        avoid_modes: avoidModes,
+        origin_lat: customOrigin?.lat,
+        origin_lng: customOrigin?.lng,
+        dest_lat: customDest?.lat,
+        dest_lng: customDest?.lng,
+        is_custom_origin: !!customOrigin,
+        is_custom_dest: !!customDest
       });
       setRoutes(updated.routes);
     } catch (err) {
@@ -162,6 +183,10 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({ stations, onSaveJourne
             setOriginId={setOriginId}
             destinationId={destinationId}
             setDestinationId={setDestinationId}
+            customOrigin={customOrigin}
+            setCustomOrigin={setCustomOrigin}
+            customDest={customDest}
+            setCustomDest={setCustomDest}
             preference={preference}
             setPreference={setPreference}
             maxWalking={maxWalking}

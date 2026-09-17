@@ -22,9 +22,16 @@ multimodal_router = MultimodalRouter(graph_mgr)
 @router.post("/search", response_model=RouteSearchResponse)
 def search_routes(req: RouteSearchRequest):
     """Calculate and rank multimodal routes across Metro, Water Metro, Bus, Auto, and Walk."""
-    if req.origin_id not in graph_mgr.graph:
+    custom_origin = None
+    if req.is_custom_origin and req.origin_lat and req.origin_lng:
+        custom_origin = {"lat": req.origin_lat, "lng": req.origin_lng, "name": "Custom Origin"}
+    elif not req.is_custom_origin and req.origin_id not in graph_mgr.graph:
         raise HTTPException(status_code=400, detail=f"Invalid origin station: {req.origin_id}")
-    if req.destination_id not in graph_mgr.graph:
+        
+    custom_dest = None
+    if req.is_custom_dest and req.dest_lat and req.dest_lng:
+        custom_dest = {"lat": req.dest_lat, "lng": req.dest_lng, "name": "Custom Destination"}
+    elif not req.is_custom_dest and req.destination_id not in graph_mgr.graph:
         raise HTTPException(status_code=400, detail=f"Invalid destination station: {req.destination_id}")
 
     live_delays = sim_engine.get_live_delays()
@@ -36,7 +43,9 @@ def search_routes(req: RouteSearchRequest):
         max_walking_meters=req.max_walking_meters,
         avoid_modes=req.avoid_modes,
         live_delays=live_delays,
-        k_routes=4
+        k_routes=4,
+        custom_origin=custom_origin,
+        custom_dest=custom_dest
     )
 
     if not routes:
@@ -64,8 +73,8 @@ def search_routes(req: RouteSearchRequest):
         route["total_duration_min"] = round(0.8 * (total_ml_travel_time + route["waiting_time_min"] + route["predicted_delay_min"]) + 0.2 * route["total_duration_min"], 1)
 
     return {
-        "origin": graph_mgr.graph.nodes[req.origin_id].get("name", req.origin_id),
-        "destination": graph_mgr.graph.nodes[req.destination_id].get("name", req.destination_id),
+        "origin": "Custom Origin" if req.is_custom_origin else graph_mgr.graph.nodes[req.origin_id].get("name", req.origin_id),
+        "destination": "Custom Destination" if req.is_custom_dest else graph_mgr.graph.nodes[req.destination_id].get("name", req.destination_id),
         "preference_applied": req.preference,
         "routes": routes,
         "weather_condition": sim_engine.weather_condition,

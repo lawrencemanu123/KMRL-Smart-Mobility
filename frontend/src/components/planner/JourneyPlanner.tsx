@@ -14,12 +14,18 @@ import {
 } from 'lucide-react';
 import { Station, PreferenceProfile, TransportMode } from '../../types';
 
+import { LocationAutocomplete } from './LocationAutocomplete';
+
 interface JourneyPlannerProps {
   stations: Station[];
   originId: string;
   setOriginId: (id: string) => void;
   destinationId: string;
   setDestinationId: (id: string) => void;
+  customOrigin: { lat: number; lng: number; name: string } | null;
+  setCustomOrigin: (c: { lat: number; lng: number; name: string } | null) => void;
+  customDest: { lat: number; lng: number; name: string } | null;
+  setCustomDest: (c: { lat: number; lng: number; name: string } | null) => void;
   preference: PreferenceProfile;
   setPreference: (p: PreferenceProfile) => void;
   maxWalking: number;
@@ -43,6 +49,10 @@ export const JourneyPlanner: React.FC<JourneyPlannerProps> = ({
   setOriginId,
   destinationId,
   setDestinationId,
+  customOrigin,
+  setCustomOrigin,
+  customDest,
+  setCustomDest,
   preference,
   setPreference,
   maxWalking,
@@ -55,9 +65,12 @@ export const JourneyPlanner: React.FC<JourneyPlannerProps> = ({
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const swapLocations = () => {
-    const temp = originId;
+    const tempId = originId;
     setOriginId(destinationId);
-    setDestinationId(temp);
+    setDestinationId(tempId);
+    const tempCustom = customOrigin;
+    setCustomOrigin(customDest);
+    setCustomDest(tempCustom);
   };
 
   const toggleAvoidMode = (mode: TransportMode) => {
@@ -85,6 +98,8 @@ export const JourneyPlanner: React.FC<JourneyPlannerProps> = ({
               onClick={() => {
                 setOriginId(p.origin);
                 setDestinationId(p.dest);
+                setCustomOrigin(null);
+                setCustomDest(null);
               }}
               className="text-left px-2.5 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-xs text-slate-300 hover:text-white transition-all truncate"
             >
@@ -95,38 +110,19 @@ export const JourneyPlanner: React.FC<JourneyPlannerProps> = ({
       </div>
 
       {/* Origin & Destination Inputs */}
-      <div className="space-y-2 relative">
-        {/* Origin */}
-        <div className="relative">
-          <label className="block text-[11px] font-medium text-slate-400 mb-1">Origin Station / Terminal</label>
-          <div className="relative flex items-center">
-            <div className="absolute left-3 w-2.5 h-2.5 rounded-full bg-sky-400"></div>
-            <select
-              value={originId}
-              onChange={(e) => setOriginId(e.target.value)}
-              className="w-full pl-8 pr-3 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-xs sm:text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all cursor-pointer"
-            >
-              <option value="">Select origin station...</option>
-              <optgroup label="Kochi Metro Stations">
-                {stations.filter(s => s.mode === 'metro').map(s => (
-                  <option key={s.id} value={s.id}>{s.name} (Metro)</option>
-                ))}
-              </optgroup>
-              <optgroup label="Kochi Water Metro Terminals">
-                {stations.filter(s => s.mode === 'water_metro').map(s => (
-                  <option key={s.id} value={s.id}>{s.name} (Water Metro)</option>
-                ))}
-              </optgroup>
-              <optgroup label="Feeder Bus Stops">
-                {stations.filter(s => s.mode === 'feeder_bus').map(s => (
-                  <option key={s.id} value={s.id}>{s.name} (Bus)</option>
-                ))}
-              </optgroup>
-            </select>
-          </div>
-        </div>
+      <div className="space-y-2 relative z-20">
+        <LocationAutocomplete
+          label="Origin Station / Custom Location"
+          placeholder="Search places or stations..."
+          stations={stations}
+          value={originId}
+          indicatorColor="bg-sky-400"
+          onChange={(id, custom) => {
+            setOriginId(id);
+            setCustomOrigin(custom);
+          }}
+        />
 
-        {/* Swap Button */}
         <div className="flex justify-center -my-2 relative z-10">
           <button
             onClick={swapLocations}
@@ -137,35 +133,17 @@ export const JourneyPlanner: React.FC<JourneyPlannerProps> = ({
           </button>
         </div>
 
-        {/* Destination */}
-        <div className="relative">
-          <label className="block text-[11px] font-medium text-slate-400 mb-1">Destination Station / Terminal</label>
-          <div className="relative flex items-center">
-            <div className="absolute left-3 w-2.5 h-2.5 rounded-full bg-cyan-400"></div>
-            <select
-              value={destinationId}
-              onChange={(e) => setDestinationId(e.target.value)}
-              className="w-full pl-8 pr-3 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-xs sm:text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all cursor-pointer"
-            >
-              <option value="">Select destination station...</option>
-              <optgroup label="Kochi Water Metro Terminals">
-                {stations.filter(s => s.mode === 'water_metro').map(s => (
-                  <option key={s.id} value={s.id}>{s.name} (Water Metro)</option>
-                ))}
-              </optgroup>
-              <optgroup label="Kochi Metro Stations">
-                {stations.filter(s => s.mode === 'metro').map(s => (
-                  <option key={s.id} value={s.id}>{s.name} (Metro)</option>
-                ))}
-              </optgroup>
-              <optgroup label="Feeder Bus Stops">
-                {stations.filter(s => s.mode === 'feeder_bus').map(s => (
-                  <option key={s.id} value={s.id}>{s.name} (Bus)</option>
-                ))}
-              </optgroup>
-            </select>
-          </div>
-        </div>
+        <LocationAutocomplete
+          label="Destination Station / Custom Location"
+          placeholder="Search places or stations..."
+          stations={stations}
+          value={destinationId}
+          indicatorColor="bg-cyan-400"
+          onChange={(id, custom) => {
+            setDestinationId(id);
+            setCustomDest(custom);
+          }}
+        />
       </div>
 
       {/* Travel Preferences */}

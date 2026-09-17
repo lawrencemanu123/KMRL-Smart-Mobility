@@ -24,7 +24,9 @@ class MultimodalRouter:
         max_walking_meters: int = 1500,
         avoid_modes: Optional[List[str]] = None,
         live_delays: Optional[Dict[str, float]] = None,
-        k_routes: int = 4
+        k_routes: int = 4,
+        custom_origin: Optional[Dict[str, Any]] = None,
+        custom_dest: Optional[Dict[str, Any]] = None
     ) -> List[Dict[str, Any]]:
         """Find up to k diverse multimodal candidate routes ranked according to user preference."""
         if avoid_modes is None:
@@ -32,7 +34,34 @@ class MultimodalRouter:
         if live_delays is None:
             live_delays = {}
 
+        # Add custom nodes temporarily if provided
+        added_nodes = []
+        added_edges = []
+        
+        if custom_origin and custom_origin.get("lat") and custom_origin.get("lng"):
+            self.G.add_node(origin_id, name=custom_origin.get("name", "Custom Origin"), lat=custom_origin["lat"], lon=custom_origin["lng"], mode="walking")
+            added_nodes.append(origin_id)
+            for node, attrs in list(self.G.nodes(data=True)):
+                if node != origin_id:
+                    dist = haversine_distance(custom_origin["lat"], custom_origin["lng"], attrs.get("lat", 0), attrs.get("lon", 0))
+                    if dist <= 2.5: # 2.5km max walking for custom connections
+                        time_min = dist * 12.0
+                        self.G.add_edge(origin_id, node, key="walk_custom", mode="walking", line="Walk", distance_km=dist, base_time_min=time_min, fare=0.0)
+                        added_edges.append((origin_id, node, "walk_custom"))
+                        
+        if custom_dest and custom_dest.get("lat") and custom_dest.get("lng"):
+            self.G.add_node(destination_id, name=custom_dest.get("name", "Custom Destination"), lat=custom_dest["lat"], lon=custom_dest["lng"], mode="walking")
+            added_nodes.append(destination_id)
+            for node, attrs in list(self.G.nodes(data=True)):
+                if node != destination_id:
+                    dist = haversine_distance(custom_dest["lat"], custom_dest["lng"], attrs.get("lat", 0), attrs.get("lon", 0))
+                    if dist <= 2.5:
+                        time_min = dist * 12.0
+                        self.G.add_edge(node, destination_id, key="walk_custom", mode="walking", line="Walk", distance_km=dist, base_time_min=time_min, fare=0.0)
+                        added_edges.append((node, destination_id, "walk_custom"))
+
         if origin_id not in self.G or destination_id not in self.G:
+            self._cleanup_temp_nodes(added_nodes, added_edges)
             return []
 
         # Construct a simple DiGraph where each (u, v) edge retains the lowest-cost option
@@ -61,6 +90,7 @@ class MultimodalRouter:
                 if len(candidate_paths) >= k_routes * 3:
                     break
         except (nx.NetworkXNoPath, nx.NodeNotFound):
+            self._cleanup_temp_nodes(added_nodes, added_edges)
             return []
 
 
@@ -89,7 +119,17 @@ class MultimodalRouter:
 
         # Rank routes intelligently according to preference
         ranked_journeys = self._rank_journeys(unique_journeys, preference)
+        
+        self._cleanup_temp_nodes(added_nodes, added_edges)
         return ranked_journeys
+
+    def _cleanup_temp_nodes(self, added_nodes, added_edges):
+        for u, v, k in added_edges:
+            if self.G.has_edge(u, v, key=k):
+                self.G.remove_edge(u, v, key=k)
+        for n in added_nodes:
+            if self.G.has_node(n):
+                self.G.remove_node(n)
 
     def _build_journey_from_path(
         self,
