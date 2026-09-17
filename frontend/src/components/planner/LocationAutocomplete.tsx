@@ -55,10 +55,10 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       }
       setIsSearching(true);
       try {
-        // Restrict search to Kochi area
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}+Kochi&format=json&limit=4`);
+        // Restrict search to Kochi area using Photon API (No strict user-agent limits)
+        const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}+Kochi&limit=4`);
         const data = await res.json();
-        setResults(data);
+        setResults(data.features || []);
       } catch (err) {
         console.error("Geocoding error", err);
       } finally {
@@ -122,15 +122,19 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
                 <div
                   key={i}
                   onClick={() => {
-                    const displayName = r.display_name.split(',')[0];
+                    const displayName = r.properties.name || r.properties.street || r.properties.city || 'Custom Location';
                     setQuery(displayName);
-                    onChange('CUSTOM_LOCATION', { lat: parseFloat(r.lat), lng: parseFloat(r.lon), name: displayName });
+                    onChange('CUSTOM_LOCATION', { 
+                      lat: r.geometry.coordinates[1], 
+                      lng: r.geometry.coordinates[0], 
+                      name: displayName 
+                    });
                     setIsOpen(false);
                   }}
                   className="px-2 py-1.5 hover:bg-slate-800 rounded-lg cursor-pointer text-sm text-slate-200 flex items-center space-x-2"
                 >
-                  <Search className="w-3.5 h-3.5 text-slate-400" />
-                  <span className="truncate">{r.display_name}</span>
+                  <Search className="w-3.5 h-3.5 text-slate-400 min-w-max" />
+                  <span className="truncate">{r.properties.name || r.properties.street} {r.properties.city ? `, ${r.properties.city}` : ''}</span>
                 </div>
               ))}
             </div>
