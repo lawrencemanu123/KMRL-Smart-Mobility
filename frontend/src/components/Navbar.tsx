@@ -69,7 +69,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             onClick={() => setActiveTab('live')}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all relative ${
+            disabled
+            title="Coming Soon - In Development"
+            className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all relative opacity-40 blur-[1.5px] cursor-not-allowed ${
               activeTab === 'live'
                 ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30'
                 : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
@@ -84,7 +86,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             onClick={() => setActiveTab('ml')}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
+            disabled
+            title="Coming Soon - In Development"
+            className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all opacity-40 blur-[1.5px] cursor-not-allowed ${
               activeTab === 'ml'
                 ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30'
                 : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
