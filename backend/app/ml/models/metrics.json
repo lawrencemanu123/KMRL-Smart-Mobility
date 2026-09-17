@@ -1,0 +1,56 @@
+{
+  "travel_time": {
+    "model_name": "Travel Time Predictor",
+    "algorithm": "Gradient Boosting Regressor",
+    "mae": 0.55,
+    "rmse": 0.79,
+    "r2_score": 0.9945,
+    "training_samples": 12000,
+    "feature_importances": {
+      "distance_km": 0.4918,
+      "mode_walking": 0.4142,
+      "mode_metro": 0.0791,
+      "mode_feeder_bus": 0.0073,
+      "traffic_level": 0.003,
+      "is_peak_hour": 0.0022,
+      "mode_auto": 0.0014,
+      "weather_Monsoon Heavy Rain": 0.0004
+    }
+  },
+  "delay_prediction": {
+    "model_name": "Service Delay Predictor",
+    "algorithm": "Gradient Boosting Regressor",
+    "mae": 0.33,
+    "rmse": 0.46,
+    "r2_score": 0.9853,
+    "training_samples": 12000,
+    "feature_importances": {
+      "upstream_delay_min": 0.9945,
+      "mode_walking": 0.001,
+      "mode_feeder_bus": 0.0007,
+      "mode_metro": 0.0007,
+      "mode_water_metro": 0.0007,
+      "passenger_density": 0.0007,
+      "traffic_level": 0.0006,
+      "weather_Monsoon Heavy Rain": 0.0003
+    }
+  },
+  "waiting_time": {
+    "model_name": "Station Waiting Time Predictor",
+    "algorithm": "Random Forest Regressor",
+    "mae": 0.57,
+    "rmse": 0.75,
+    "r2_score": 0.9424,
+    "training_samples": 12000,
+    "feature_importances": {
+      "scheduled_headway_min": 0.8561,
+      "delay_minutes": 0.0756,
+      "mode_walking": 0.0336,
+      "mode_metro": 0.018,
+      "mode_feeder_bus": 0.0082,
+      "mode_auto": 0.0047,
+      "mode_water_metro": 0.0032,
+      "passenger_density": 0.0004
+    }
+  }
+}
