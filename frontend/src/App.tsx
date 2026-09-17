@@ -78,7 +78,7 @@ export const App: React.FC = () => {
         )}
         {activeTab === 'live' && <LiveStatusPage />}
         {activeTab === 'ml' && <MlAnalyticsPage />}
-        {activeTab === 'admin' && <AdminDashboardPage />}
+        {activeTab === 'admin' && user?.is_admin && <AdminDashboardPage />}
         {activeTab === 'journeys' && (
           <MyJourneysPage user={user} onOpenAuth={() => setIsAuthOpen(true)} />
         )}

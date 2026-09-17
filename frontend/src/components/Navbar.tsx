@@ -94,17 +94,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>AI & ML Analytics</span>
           </button>
 
-          <button
-            onClick={() => setActiveTab('admin')}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
-              activeTab === 'admin'
-                ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30'
-                : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
-            }`}
-          >
-            <BarChart3 className="w-4 h-4" />
-            <span>Admin</span>
-          </button>
+          {user?.is_admin && (
+            <button
+              onClick={() => setActiveTab('admin')}
+              className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
+                activeTab === 'admin'
+                  ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
+              }`}
+            >
+              <BarChart3 className="w-4 h-4" />
+              <span>Admin</span>
+            </button>
+          )}
 
           <button
             onClick={() => setActiveTab('journeys')}
